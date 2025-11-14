@@ -1,8 +1,3 @@
-### Short Description
-MIPS 32-bit pipelined CPU with full 5-stage pipeline, hazard control (forwarding + stall), instruction/data caches, and dynamic branch prediction (BTB + 2-bit BHT). Supports most R/I/J-type instructions, syscall termination, 4KB instruction/data memory with latency modeling, and PLRU-based multi-way set-associative caches.
-
----
-
 # MIPS Pipeline CPU with Hazard Control, Cache, and Branch Prediction
 
 ## 1. Overview
