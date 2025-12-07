@@ -20,20 +20,25 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module control_unit(opcode, funct, reg_dst, ALU_src, mem_to_reg, reg_write, mem_read, mem_write, branch, jump, use_shamt, alu_control);
-    //INPUTS
-    input wire [5:0] opcode, funct;
+module control_unit(
+    //INSTRUCTION INPUT INTERFACE
+    input wire [5:0]    opcode,
+    input wire [5:0]    funct,
     
-    //OUTPUTS
-    output reg reg_dst, ALU_src;
-    output reg mem_to_reg, reg_write;
-    output reg mem_read, mem_write;
-    output reg branch, jump;
-    output reg use_shamt;
+    //CONTROL OUTPUTS INTERFACE 
+    output reg          reg_dst,
+    output reg          ALU_src,
+    output reg          mem_to_reg,
+    output reg          reg_write,
+    output reg          mem_read,
+    output reg          mem_write,
+    output reg          branch,
+    output reg          jump,
+    output reg          use_shamt,
+    output reg [3:0]    alu_control
+);
     
-    output reg [3:0] alu_control;
-    
-    //Logic
+    //LOGIC
     always @(*) begin
         //default
         reg_dst      = 1'b0;

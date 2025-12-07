@@ -20,16 +20,20 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module alu(A, B, ALU_control, result, zero);
-    //INPUTS
-    input wire [31:0] A, B;
-    input wire [3:0] ALU_control;
+module alu(
+    //OPERAND INPUTS INTERFACE
+    input wire [31:0]   A,
+    input wire [31:0]   B,
+
+    //CONTROL INPUT INTERFACE
+    input wire [3:0]    ALU_control,
+
+    //OUTPUTS INTERFACE
+    output reg [31:0]   result,
+    output reg          zero
+);
     
-    //OUTPUTS
-    output reg [31:0] result;
-    output reg zero;
-    
-    //LOGICS
+    //LOGIC
     always @(*) begin
         case (ALU_control)
             4'b0000: result = A & B;

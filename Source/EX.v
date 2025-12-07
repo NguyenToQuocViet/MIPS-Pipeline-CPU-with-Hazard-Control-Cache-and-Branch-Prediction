@@ -20,57 +20,55 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module EX(clk, rst_n, reg_data1_in, reg_data2_in, imm_in, pc_plus4_in, rs_addr_in, rt_addr_in, 
-rd_addr_in, shamt_in, reg_dst_in, ALU_src_in, mem_to_reg_in, reg_write_in, mem_read_in,
-mem_write_in, branch_in, jump_in, use_shamt_in, alu_control_in, forwardA, forwardB, 
-ex_mem_result_in, mem_wb_result_in, alu_result_out, branch_target_out, zero_flag_out, 
-reg_data2_fwd_out, rd_addr_final_out, mem_to_reg_out, reg_write_out, mem_read_out, 
-mem_write_out, branch_out);
-    //INPUTS
-    input wire        clk;
-    input wire        rst_n;
-    
-    input wire [31:0] reg_data1_in;
-    input wire [31:0] reg_data2_in;
-    input wire [31:0] imm_in;
-    input wire [31:0] pc_plus4_in;
-    
-    input wire [4:0]  rs_addr_in;
-    input wire [4:0]  rt_addr_in;
-    input wire [4:0]  rd_addr_in;
-    input wire [4:0]  shamt_in;
-    
-    input wire        reg_dst_in;
-    input wire        ALU_src_in;
-    input wire        mem_to_reg_in;
-    input wire        reg_write_in;
-    input wire        mem_read_in;
-    input wire        mem_write_in;
-    input wire        branch_in;
-    input wire        jump_in;
-    input wire        use_shamt_in;
-    input wire [3:0]  alu_control_in;
-    
-    input wire [1:0]  forwardA;
-    input wire [1:0]  forwardB;
-    input wire [31:0] ex_mem_result_in;
-    input wire [31:0] mem_wb_result_in; 
+module EX(
+    //SYSTEM INTERFACE
+    input wire          clk,
+    input wire          rst_n,
 
-    //OUTPUTS
-    output wire [31:0] alu_result_out;
-    output wire [31:0] branch_target_out;
-    output wire        zero_flag_out;
+    //PIPELINE DATA INPUT INTERFACE 
+    input wire [31:0]   reg_data1_in,
+    input wire [31:0]   reg_data2_in,
+    input wire [31:0]   imm_in,
+    input wire [31:0]   pc_plus4_in,
+    input wire [4:0]    rs_addr_in,
+    input wire [4:0]    rt_addr_in,
+    input wire [4:0]    rd_addr_in,
+    input wire [4:0]    shamt_in,
+
+    //CONTROL SIGNALS INPUT INTERFACE 
+    input wire          reg_dst_in,
+    input wire          ALU_src_in,
+    input wire          mem_to_reg_in,
+    input wire          reg_write_in,
+    input wire          mem_read_in,
+    input wire          mem_write_in,
+    input wire          branch_in,
+    input wire          jump_in,
+    input wire          use_shamt_in,
+    input wire [3:0]    alu_control_in,
+
+    //FORWARDING INTERFACE 
+    input wire [1:0]    forwardA,
+    input wire [1:0]    forwardB,
+    input wire [31:0]   ex_mem_result_in, 
+    input wire [31:0]   mem_wb_result_in, 
+
+    //EXECUTION RESULT INTERFACE 
+    output wire [31:0]  alu_result_out,
+    output wire [31:0]  branch_target_out,
+    output wire         zero_flag_out,
+    output wire [31:0]  reg_data2_fwd_out, 
+    output wire [4:0]   rd_addr_final_out, 
+
+    //CONTROL SIGNALS OUTPUT INTERFACE 
+    output wire         mem_to_reg_out,
+    output wire         reg_write_out,
+    output wire         mem_read_out,
+    output wire         mem_write_out,
+    output wire         branch_out
+);
     
-    output wire [31:0] reg_data2_fwd_out;
-    output wire [4:0]  rd_addr_final_out;
-    
-    output wire        mem_to_reg_out;
-    output wire        reg_write_out;
-    output wire        mem_read_out;
-    output wire        mem_write_out;
-    output wire        branch_out;
-    
-    //LOGICS
+    //LOGIC
     reg [31:0] data_in_1;
     reg [31:0] data_in_2;
     

@@ -20,23 +20,23 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module ICACHE(clk, rst_n, cpu_addr_in, cpu_req_in, cpu_data_out, cpu_ready_out, mem_req_out, mem_addr_out, mem_data_in, mem_ready_in);
-    //INPUTS
-    input wire  clk, rst_n;
-    input wire  [31:0] cpu_addr_in;
-    input wire  cpu_req_in;
-    
-    input wire  [255:0] mem_data_in;
-    input wire  mem_ready_in;
-    
-    //OUTPUTS
-    output wire cpu_data_out;
-    output wire cpu_ready_out;
-    
-    output wire mem_req_out;
-    output wire [31:0] mem_addr_out;
-    
-    //LOGIC
+module ICACHE(
+    //SYSTEM INTERFACE
+    input wire          clk,
+    input wire          rst_n,
+
+    //CPU INTERFACE
+    input wire [31:0]   cpu_addr_in,
+    input wire          cpu_req_in,
+    output wire         cpu_data_out,
+    output wire         cpu_ready_out,
+
+    //MAIN MEMORY INTERFACE
+    output wire         mem_req_out,
+    output wire [31:0]  mem_addr_out,
+    input wire [255:0]  mem_data_in,
+    input wire          mem_ready_in
+);
     
     //Controller -> 4 Data
     wire [4:0]  s_idx_out;       

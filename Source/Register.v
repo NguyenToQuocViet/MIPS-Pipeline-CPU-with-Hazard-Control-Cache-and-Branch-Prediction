@@ -20,18 +20,24 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module register_file(clk, rst_n, reg_write_en, read_addr_1, read_addr_2, write_addr, write_data, read_data_1, read_data_2);
-    //INPUTS
-    input wire clk, rst_n;
-    input wire reg_write_en;
-    input wire [4:0] read_addr_1, read_addr_2, write_addr;
+module register_file(
+    //SYSTEM INTERFACE
+    input wire          clk,
+    input wire          rst_n,
+
+    //WRITE INTERFACE 
+    input wire          reg_write_en,
+    input wire [4:0]    write_addr,
+    input wire [31:0]   write_data,
+
+    //READ INTERFACE 
+    input wire [4:0]    read_addr_1,
+    input wire [4:0]    read_addr_2,
+    output wire [31:0]  read_data_1,
+    output wire [31:0]  read_data_2
+);
     
-    input wire [31:0] write_data;
-    
-    //OUTPUTS
-    output wire [31:0] read_data_1, read_data_2;
-    
-    //Logic
+    //LOGIC
     reg [31:0] reg_file [0:31];
     
     integer i;

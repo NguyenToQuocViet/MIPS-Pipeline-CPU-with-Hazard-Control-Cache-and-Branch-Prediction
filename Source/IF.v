@@ -20,37 +20,50 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module IF(clk, rst_n, pc_write_en, pc_redirect, pc_redirect_addr, predicted_addr, predicted_taken, cache_ready, pc_current_out, pc_plus4_out);
-    //INPUTS
-    input wire clk, rst_n;
-    input wire pc_write_en, pc_redirect, predicted_taken;
+module IF(
+    //SYSTEM SIGNALS
+    input wire clk,
+    input wire rst_n,
     
-    input wire [31:0] pc_redirect_addr, predicted_addr;
+    //HDU INTERFACE
+    input wire pc_write_en,
+    input wire pc_redirect,
+    input wire [31:0] pc_redirect_addr,
     
-    input wire cache_ready;
+    //BPU INTERFACE
+    input wire predicted_taken,
+    input wire [31:0] predicted_addr,
     
-    //OUTPUTS
-    output wire pc_current_out, pc_plus4_out;
+    //ICACHE INTERFACE
+    input wire cache_ready,
+    input wire [31:0] instr_in,
+    output wire [31:0] pc_current_out,
     
-    //Logic
+    //PIPELINE INTERFACE
+    output wire [31:0] instr_out,
+    output wire predicted_taken_out,
+    output wire [31:0] pc_plus4_out
+);
+
+    //LOGIC
     reg  [31:0] pc_reg;
     wire [31:0] pc_plus4;
     wire        pc_stall;
     wire [31:0] next_pc;
         
-        //PC+4
+    //PC+4
     assign pc_plus4 = pc_reg + 4;
         
-        //Stall
+    //Stall
     assign pc_stall = (!pc_write_en) || (!cache_ready);
     
-        //Next PC
+    //Next PC
     assign next_pc =    pc_redirect     ? pc_redirect_addr :    //Priority 1: flush -> redirect (branch predict wrong) 
                         pc_stall        ? pc_reg           :    //Priority 2: stall pipeline
                         predicted_taken ? predicted_addr   :    //Priority 3: get predicted address from BTB
                         pc_plus4;                               //Default
                         
-        //PC update
+    //PC update
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             pc_reg <= 32'hBFC00000;
@@ -61,4 +74,6 @@ module IF(clk, rst_n, pc_write_en, pc_redirect, pc_redirect_addr, predicted_addr
     
     assign pc_current_out = pc_reg;
     assign pc_plus4_out = pc_plus4;
+    assign instr_out = instr_in;
+    assign predicted_taken_out = predicted_taken;
 endmodule

@@ -20,49 +20,48 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module icache_ctrl(clk, rst_n, cpu_addr_in, cpu_req_in, cpu_data_out, cpu_ready_out, array_idx_out, array_tag_in_out, array_data_in_out,
-array_way_we_out, array_lru_in_out, array_lru_we_out, array_tag_out_0, array_tag_out_1, array_tag_out_2, array_tag_out_3, array_valid_out_0,
-array_valid_out_1, array_valid_out_2, array_valid_out_3, array_lru_out_in, array_data_out_0, array_data_out_1, array_data_out_2, array_data_out_3,
-mem_req_out, mem_addr_out, mem_data_in, mem_ready_in);
-    //CPU Interface
-    input wire        clk;
-    input wire        rst_n;
-    input wire [31:0] cpu_addr_in;
-    input wire        cpu_req_in;
-    output wire[31:0] cpu_data_out;
-    output wire       cpu_ready_out;
+module icache_ctrl(
+    //SYSTEM INTERFACE
+    input wire          clk,
+    input wire          rst_n,
+
+    //CPU INTERFACE
+    input wire [31:0]   cpu_addr_in,
+    input wire          cpu_req_in, //mac dinh la 1 vi IF luc nao cung muon fetch lenh   
+    output wire [31:0]  cpu_data_out,
+    output wire         cpu_ready_out,
+
+    //CACHE ARRAYS INTERFACE
+    output wire [4:0]   array_idx_out,
+    output wire [21:0]  array_tag_in_out,
+    output reg  [255:0] array_data_in_out,
+    output reg  [3:0]   array_way_we_out,
+    output reg  [2:0]   array_lru_in_out,
+    output reg          array_lru_we_out,
     
-    //DATA Input Interface
-    output wire   [4:0]  array_idx_out;
-    output wire   [21:0] array_tag_in_out;
-    output reg    [255:0] array_data_in_out;
-    output reg    [3:0]  array_way_we_out;
-    output reg    [2:0]  array_lru_in_out;
-    output reg           array_lru_we_out;
+    input wire  [21:0]  array_tag_out_0,
+    input wire  [21:0]  array_tag_out_1,
+    input wire  [21:0]  array_tag_out_2,
+    input wire  [21:0]  array_tag_out_3,
     
-    //DATA Output Interface
-    input wire     [21:0] array_tag_out_0;
-    input wire     [21:0] array_tag_out_1;
-    input wire     [21:0] array_tag_out_2;
-    input wire     [21:0] array_tag_out_3;
+    input wire          array_valid_out_0,
+    input wire          array_valid_out_1,
+    input wire          array_valid_out_2,
+    input wire          array_valid_out_3,
+    
+    input wire  [255:0] array_data_out_0,
+    input wire  [255:0] array_data_out_1,
+    input wire  [255:0] array_data_out_2,
+    input wire  [255:0] array_data_out_3,
+    
+    input wire  [2:0]   array_lru_out_in,
 
-    input wire            array_valid_out_0;
-    input wire            array_valid_out_1;
-    input wire            array_valid_out_2;
-    input wire            array_valid_out_3;
-
-    input wire     [2:0]  array_lru_out_in;
-
-    input wire     [255:0] array_data_out_0;
-    input wire     [255:0] array_data_out_1;
-    input wire     [255:0] array_data_out_2;
-    input wire     [255:0] array_data_out_3;
-
-    //Memory Interface
-    output reg          mem_req_out;
-    output reg  [31:0]  mem_addr_out;
-    input wire  [255:0] mem_data_in;
-    input wire          mem_ready_in;
+    //MAIN MEMORY INTERFACE
+    output reg          mem_req_out,
+    output reg  [31:0]  mem_addr_out,
+    input wire  [255:0] mem_data_in,
+    input wire          mem_ready_in
+);
     
     //Tach cac bit trong addr
     wire [21:0] addr_tag;
@@ -120,7 +119,7 @@ mem_req_out, mem_addr_out, mem_data_in, mem_ready_in);
     assign is_hit = hit_way_0 | hit_way_1 | hit_way_2 | hit_way_3;
     
     //Cache MISS logic
-        //FSM
+    //FSM
     reg [1:0] state_reg;
     reg [1:0] next_state;
     
@@ -136,21 +135,21 @@ mem_req_out, mem_addr_out, mem_data_in, mem_ready_in);
             state_reg <= next_state;
         end
     end
-        //State Logic
+    
+    //State Logic
     always @(*) begin
         //default
         next_state = state_reg;
         
         case (state_reg)
             IDLE: begin
-                if (cpu_req_in && !is_hit)
+                if (cpu_req_in && !is_hit)  //miss
                     next_state = MISS_REQ_MEM;
                 //Cache HIT thi cu giu nguyen IDLE
             end
             
             MISS_REQ_MEM: begin
                 next_state = MISS_WAIT_MEM;
-                //Logic xu ly req sang Mem xu ly rieng
             end
             
             MISS_WAIT_MEM: begin
@@ -160,17 +159,16 @@ mem_req_out, mem_addr_out, mem_data_in, mem_ready_in);
             
             MISS_REFILL: begin
                 next_state = IDLE;
-                //Logic thay the Cache xu ly rieng
             end
             
             default: next_state = IDLE;
         endcase 
     end
     
-        //Ready logic
-    assign cpu_ready_out = (state_reg == IDLE) && is_hit;
+    //Ready logic
+    assign cpu_ready_out = (state_reg == IDLE) && is_hit;   //quan trong
     
-        //FSM Output
+    //FSM Output
     wire [3:0] victim_way_oh;
     reg [2:0] next_lru_bits;
     
@@ -187,13 +185,13 @@ mem_req_out, mem_addr_out, mem_data_in, mem_ready_in);
         
         case (state_reg)
             IDLE: begin
-                if (is_hit && cpu_req_in) begin
+                if (is_hit && cpu_req_in) begin //hit
                     array_lru_we_out = 1'b1;
                 end
             end
         
             MISS_REQ_MEM: begin
-                mem_req_out = 1'b1;
+                mem_req_out = 1'b1; //xin du lieu tu mem
                 mem_addr_out = {addr_tag, addr_index, 5'b00000};
             end
         
@@ -210,7 +208,7 @@ mem_req_out, mem_addr_out, mem_data_in, mem_ready_in);
         endcase
     end
     
-        //LRU Update
+    //LRU Update
     assign victim_way_oh[0] = (!array_lru_out_in[2] && !array_lru_out_in[1]); 
     assign victim_way_oh[1] = (!array_lru_out_in[2] &&  array_lru_out_in[1]); 
     assign victim_way_oh[2] = ( array_lru_out_in[2] && !array_lru_out_in[0]); 
@@ -221,15 +219,23 @@ mem_req_out, mem_addr_out, mem_data_in, mem_ready_in);
         next_lru_bits = array_lru_out_in;
         
         if (state_reg == IDLE) begin 
-            if (hit_way_0)      next_lru_bits = {1'b1, 1'b1, array_lru_out_in[0]}; 
-            else if (hit_way_1) next_lru_bits = {1'b1, 1'b0, array_lru_out_in[0]}; 
-            else if (hit_way_2) next_lru_bits = {1'b0, array_lru_out_in[1], 1'b1}; 
-            else if (hit_way_3) next_lru_bits = {1'b0, array_lru_out_in[1], 1'b0}; 
+            if (hit_way_0)      
+                next_lru_bits = {1'b1, 1'b1, array_lru_out_in[0]}; 
+            else if (hit_way_1) 
+                next_lru_bits = {1'b1, 1'b0, array_lru_out_in[0]}; 
+            else if (hit_way_2) 
+                next_lru_bits = {1'b0, array_lru_out_in[1], 1'b1}; 
+            else if (hit_way_3) 
+                next_lru_bits = {1'b0, array_lru_out_in[1], 1'b0}; 
         end else if (state_reg == MISS_REFILL) begin 
-            if (victim_way_oh[0])      next_lru_bits = {1'b1, 1'b1, array_lru_out_in[0]}; 
-            else if (victim_way_oh[1]) next_lru_bits = {1'b1, 1'b0, array_lru_out_in[0]}; 
-            else if (victim_way_oh[2]) next_lru_bits = {1'b0, array_lru_out_in[1], 1'b1};
-            else if (victim_way_oh[3]) next_lru_bits = {1'b0, array_lru_out_in[1], 1'b0}; 
+            if (victim_way_oh[0])      
+                next_lru_bits = {1'b1, 1'b1, array_lru_out_in[0]}; 
+            else if (victim_way_oh[1]) 
+                next_lru_bits = {1'b1, 1'b0, array_lru_out_in[0]}; 
+            else if (victim_way_oh[2])  
+                next_lru_bits = {1'b0, array_lru_out_in[1], 1'b1};
+            else if (victim_way_oh[3]) 
+                next_lru_bits = {1'b0, array_lru_out_in[1], 1'b0}; 
         end
     end
 endmodule
